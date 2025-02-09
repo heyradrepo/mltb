@@ -341,11 +341,11 @@ class TaskListener(TaskConfig):
                 for index, (link, name) in enumerate(files.items(), start=1):
                     fmsg += f"{index}. <a href='{link}'>{name}</a>\n"
                     if len(fmsg.encode() + msg.encode()) > 4000:
-                        await send_message(self.message, msg + fmsg)
+                        await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
                         await sleep(1)
                         fmsg = ""
                 if fmsg != "":
-                    await send_message(self.message, msg + fmsg)
+                    await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
         else:
             msg += f"\n\n<b>Type: </b>{mime_type}"
             if mime_type == "Folder":
@@ -359,7 +359,7 @@ class TaskListener(TaskConfig):
             ):
                 buttons = ButtonMaker()
                 if link:
-                    buttons.url_button("☁️ Cloud Link", link)
+                    buttons.url_button("Drive", link)
                 else:
                     msg += f"\n\nPath: <code>{rclone_path}</code>"
                 if rclone_path and Config.RCLONE_SERVE_URL and not self.private_link:
@@ -368,7 +368,7 @@ class TaskListener(TaskConfig):
                     share_url = f"{Config.RCLONE_SERVE_URL}/{remote}/{url_path}"
                     if mime_type == "Folder":
                         share_url += "/"
-                    buttons.url_button("🔗 Rclone Link", share_url)
+                    buttons.url_button("Rclone", share_url)
                 if not rclone_path and dir_id:
                     INDEX_URL = ""
                     if self.private_link:
@@ -377,10 +377,10 @@ class TaskListener(TaskConfig):
                         INDEX_URL = Config.INDEX_URL
                     if INDEX_URL:
                         share_url = f"{INDEX_URL}findpath?id={dir_id}"
-                        buttons.url_button("⚡ Index Link", share_url)
+                        buttons.url_button("Index", share_url)
                         if mime_type.startswith(("image", "video", "audio")):
                             share_urls = f"{INDEX_URL}findpath?id={dir_id}&view=true"
-                            buttons.url_button("🌐 View Link", share_urls)
+                            buttons.url_button("View", share_urls)
                 button = buttons.build_menu(2)
             else:
                 msg += f"\n\nPath: <code>{rclone_path}</code>"

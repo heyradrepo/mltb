@@ -48,10 +48,11 @@ STATUSES = {
 
 async def get_task_by_gid(gid: str):
     async with task_dict_lock:
+        gid = gid[:8]
         for tk in task_dict.values():
             if hasattr(tk, "seeding"):
                 await tk.update()
-            if tk.gid() == gid:
+            if tk.gid()[:8] == gid:
                 return tk
         return None
 
@@ -182,6 +183,8 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             tstatus = await task.status()
         else:
             tstatus = task.status()
+        task_gid = task.gid()[:8]
+        cancel_task = f"<code>/cancel {task_gid}</code>"
         if task.listener.is_super_chat:
             msg += f"<b>{index + start_position}.<a href='{task.listener.message.link}'>{tstatus}</a>: </b>"
         else:
@@ -221,7 +224,7 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg += f" | <b>Time: </b>{task.seeding_time()}"
         else:
             msg += f"\n<b>Size: </b>{task.size()}"
-        msg += f"\n<b>Gid: </b><code>{task.gid()}</code>\n\n"
+        msg += f"\n<blockquote>{cancel_task}</blockquote>\n\n"
 
     if len(msg) == 0:
         if status == "All":
@@ -230,11 +233,11 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             msg = f"No Active {status} Tasks!\n\n"
     buttons = ButtonMaker()
     if not is_user:
-        buttons.data_button("📜", f"status {sid} ov", position="header")
+        buttons.data_button("☰", f"status {sid} ov", position="header")
     if len(tasks) > STATUS_LIMIT:
         msg += f"<b>Page:</b> {page_no}/{pages} | <b>Tasks:</b> {tasks_no} | <b>Step:</b> {page_step}\n"
-        buttons.data_button("<<", f"status {sid} pre", position="header")
-        buttons.data_button(">>", f"status {sid} nex", position="header")
+        buttons.data_button("⫷", f"status {sid} pre", position="header")
+        buttons.data_button("⫸", f"status {sid} nex", position="header")
         if tasks_no > 30:
             for i in [1, 2, 4, 6, 8, 10, 15]:
                 buttons.data_button(i, f"status {sid} ps {i}", position="footer")

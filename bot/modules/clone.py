@@ -1,6 +1,6 @@
 from asyncio import gather
 from json import loads
-from secrets import token_urlsafe
+from secrets import token_hex
 from aiofiles.os import remove
 
 from .. import LOGGER, task_dict, task_dict_lock, bot_loop
@@ -151,7 +151,7 @@ class Clone(TaskListener):
                 )
             else:
                 msg = ""
-                gid = token_urlsafe(12)
+                gid = token_hex(12)
                 async with task_dict_lock:
                     task_dict[self.mid] = GoogleDriveStatus(self, drive, gid, "cl")
                 if self.multi <= 1:
@@ -221,7 +221,7 @@ class Clone(TaskListener):
             LOGGER.info(
                 f"Clone Started: Name: {self.name} - Source: {self.link} - Destination: {self.up_dest}"
             )
-            gid = token_urlsafe(12)
+            gid = token_hex(12)
             async with task_dict_lock:
                 task_dict[self.mid] = RcloneStatus(self, RCTransfer, gid, "cl")
             if self.multi <= 1:

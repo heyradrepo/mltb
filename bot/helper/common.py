@@ -1,7 +1,7 @@
 from aiofiles.os import path as aiopath, remove, makedirs, listdir
 from asyncio import sleep, gather
 from os import walk, path as ospath
-from secrets import token_urlsafe
+from secrets import token_hex
 from aioshutil import move, rmtree
 from pyrogram.enums import ChatAction
 from re import sub, I
@@ -471,7 +471,7 @@ class TaskConfig:
     async def run_multi(self, input_list, obj):
         await sleep(7)
         if not self.multi_tag and self.multi > 1:
-            self.multi_tag = token_urlsafe(3)
+            self.multi_tag = token_hex(3)
             multi_tags.add(self.multi_tag)
         elif self.multi <= 1:
             if self.multi_tag in multi_tags:
@@ -542,7 +542,7 @@ class TaskConfig:
             b_msg.append(f"{self.bulk[0]} -i {len(self.bulk)} {self.options}")
             msg = " ".join(b_msg)
             if len(self.bulk) > 2:
-                self.multi_tag = token_urlsafe(3)
+                self.multi_tag = token_hex(3)
                 multi_tags.add(self.multi_tag)
                 msg += f"\nCancel Multi: <code>/{BotCommands.CancelTaskCommand[1]} {self.multi_tag}</code>"
             nextmsg = await send_message(self.message, msg)

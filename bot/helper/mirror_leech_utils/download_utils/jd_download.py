@@ -6,7 +6,7 @@ from time import time
 from aiofiles.os import path as aiopath, remove
 from aiofiles import open as aiopen
 from base64 import b64encode
-from secrets import token_urlsafe
+from secrets import token_hex
 from myjd.exception import MYJDException
 
 from .... import (
@@ -116,7 +116,7 @@ async def get_jd_download_directory():
 async def add_jd_download(listener, path):
     try:
         async with jd_listener_lock:
-            gid = token_urlsafe(12)
+            gid = token_hex(12)
             if not jdownloader.is_connected:
                 raise MYJDException(jdownloader.error)
 

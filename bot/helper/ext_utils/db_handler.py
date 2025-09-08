@@ -23,7 +23,7 @@ class DbManager:
             self._conn = AsyncMongoClient(
                 Config.DATABASE_URL, server_api=ServerApi("1")
             )
-            self.db = self._conn.mltb
+            self.db = self._conn.xyrad
             self._return = False
         except PyMongoError as e:
             LOGGER.error(f"Error in DB connection: {e}")

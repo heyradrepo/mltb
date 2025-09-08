@@ -10,7 +10,7 @@ CMD_SUFFIX = ""
 AUTHORIZED_CHATS = ""
 SUDO_USERS = ""
 DATABASE_URL = ""
-STATUS_LIMIT = 10
+STATUS_LIMIT = 4
 DEFAULT_UPLOAD = "rc"
 STATUS_UPDATE_INTERVAL = 15
 FILELION_API = ""
@@ -58,6 +58,9 @@ USENET_SERVERS = [
         "priority": 0,
     }
 ]
+# Nzb search
+HYDRA_IP = ""
+HYDRA_API_KEY = ""
 # Update
 UPSTREAM_REPO = ""
 UPSTREAM_BRANCH = "master"

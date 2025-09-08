@@ -64,10 +64,10 @@ class TelegramDownloadHelper:
         await self._listener.on_download_error(error)
 
     async def _on_download_complete(self):
-        await self._listener.on_download_complete()
         async with global_lock:
-            GLOBAL_GID.remove(self._id)
-        return
+            if self._id in GLOBAL_GID:
+                GLOBAL_GID.remove(self._id)
+        await self._listener.on_download_complete()
 
     async def _download(self, message, path):
         try:
@@ -89,7 +89,6 @@ class TelegramDownloadHelper:
             await self._on_download_complete()
         elif not self._listener.is_cancelled:
             await self._on_download_error("Internal error occurred")
-        return
 
     async def add_download(self, message, path, session):
         self.session = session
@@ -118,10 +117,15 @@ class TelegramDownloadHelper:
                 download = media.file_unique_id not in GLOBAL_GID
 
             if download:
-                if self._listener.name == "":
-                    self._listener.name = (
-                        media.file_name if hasattr(media, "file_name") else "None"
-                    )
+                if not self._listener.name:
+                    if hasattr(media, "file_name") and media.file_name:
+                        if "/" in media.file_name:
+                            self._listener.name = media.file_name.rsplit("/", 1)[-1]
+                            path = path + self._listener.name
+                        else:
+                            self._listener.name = media.file_name
+                    else:
+                        self._listener.name = "None"
                 else:
                     path = path + self._listener.name
                 self._listener.size = media.file_size

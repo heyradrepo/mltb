@@ -191,10 +191,6 @@ class Clone(TaskListener):
                     "--config",
                     config_path,
                     f"{remote}:{src_path}",
-                    "-v",
-                    "--log-systemd",
-                    "--log-file",
-                    "rlog.txt",
                 ]
                 res = await cmd_exec(cmd)
                 if res[2] != 0:
@@ -248,10 +244,6 @@ class Clone(TaskListener):
                 "--config",
                 config_path,
                 destination,
-                "-v",
-                "--log-systemd",
-                "--log-file",
-                "rlog.txt",
             ]
             cmd2 = [
                 "rclone",
@@ -262,10 +254,6 @@ class Clone(TaskListener):
                 "--config",
                 config_path,
                 destination,
-                "-v",
-                "--log-systemd",
-                "--log-file",
-                "rlog.txt",
             ]
             cmd3 = [
                 "rclone",
@@ -275,25 +263,21 @@ class Clone(TaskListener):
                 "--config",
                 config_path,
                 destination,
-                "-v",
-                "--log-systemd",
-                "--log-file",
-                "rlog.txt",
             ]
             res1, res2, res3 = await gather(
                 cmd_exec(cmd1),
                 cmd_exec(cmd2),
                 cmd_exec(cmd3),
             )
-            if res1[2] != res2[2] != res3[2] != 0:
+            if res1[2] != 0 or res2[2] != 0 or res3[2] != 0:
                 if res1[2] == -9:
                     return
                 files = None
                 folders = None
                 self.size = 0
-                LOGGER.error(
-                    f"Error: While getting rclone stat. Path: {destination}. Stderr: {res1[1][:4000]}"
-                )
+                error = res1[1] or res2[1] or res3[1]
+                msg = f"Error: While getting rclone stat. Path: {destination}. Stderr: {error[:4000]}"
+                await self.on_upload_error(msg)
             else:
                 files = len(res1[0].split("\n"))
                 folders = len(res2[0].strip().split("\n")) if res2[0] else 0

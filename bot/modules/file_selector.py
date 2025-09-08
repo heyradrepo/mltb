@@ -1,4 +1,5 @@
 from aiofiles.os import remove, path as aiopath
+from asyncio import iscoroutinefunction
 
 from .. import (
     task_dict,
@@ -48,13 +49,15 @@ async def select(_, message):
         )
         await send_message(message, msg)
         return
-
     if (
         Config.OWNER_ID != user_id
         and task.listener.user_id != user_id
-        and (user_id not in user_data or not user_data[user_id].get("is_sudo"))
+        and (user_id not in user_data or not user_data[user_id].get("SUDO"))
     ):
         await send_message(message, "This task is not for you!")
+        return
+    if not iscoroutinefunction(task.status):
+        await send_message(message, "The task have finshed the download stage!")
         return
     if await task.status() not in [
         MirrorStatus.STATUS_DOWNLOAD,
@@ -115,9 +118,9 @@ async def confirm_selection(_, query):
         id_ = data[3]
         if hasattr(task, "seeding"):
             if task.listener.is_qbit:
-                tor_info = (await TorrentManager.qbittorrent.torrents.info(hashes=[id_]))[
-                    0
-                ]
+                tor_info = (
+                    await TorrentManager.qbittorrent.torrents.info(hashes=[id_])
+                )[0]
                 path = tor_info.content_path.rsplit("/", 1)[0]
                 res = await TorrentManager.qbittorrent.torrents.files(id_)
                 for f in res:

@@ -1,6 +1,8 @@
 from aiofiles.os import remove, path as aiopath
-from asyncio import sleep
+from asyncio import sleep, TimeoutError
 from time import time
+from aiohttp.client_exceptions import ClientError
+from aioqbt.exc import AQError
 
 from ... import (
     task_dict,
@@ -44,7 +46,7 @@ async def _on_seed_finish(tor):
     ext_hash = tor.hash
     LOGGER.info(f"Cancelling Seed: {tor.name}")
     if task := await get_task_by_gid(ext_hash[:12]):
-        msg = f"Seeding stopped with Ratio: {round(tor.ratio, 3)} and Time: {get_readable_time(int(tor.seeding_time.total_seconds()))}"
+        msg = f"Seeding stopped with Ratio: {round(tor.ratio, 3)} and Time: {get_readable_time(int(tor.seeding_time.total_seconds() or "0"))}"
         await task.listener.on_upload_error(msg)
     await _remove_torrent(ext_hash, tor.tags[0])
 
@@ -161,7 +163,9 @@ async def _qb_listener():
                                 [tor_info.hash]
                             )
                     elif state == "missingFiles":
-                        await TorrentManager.qbittorrent.torrents.recheck([tor_info.hash])
+                        await TorrentManager.qbittorrent.torrents.recheck(
+                            [tor_info.hash]
+                        )
                     elif state == "error":
                         await _on_download_error(
                             "No enough space for this torrent on device", tor_info
@@ -170,7 +174,12 @@ async def _qb_listener():
                         int(tor_info.completion_on.timestamp()) != -1
                         and not qb_torrents[tag]["uploaded"]
                         and state
-                        not in ["checkingUP", "checkingDL", "checkingResumeData"]
+                        in [
+                            "queuedUP",
+                            "stalledUP",
+                            "uploading",
+                            "forcedUP",
+                        ]
                     ):
                         qb_torrents[tag]["uploaded"] = True
                         await _on_download_complete(tor_info)
@@ -181,7 +190,7 @@ async def _qb_listener():
                         qb_torrents[tag]["seeding"] = False
                         await _on_seed_finish(tor_info)
                         await sleep(0.5)
-            except Exception as e:
+            except (ClientError, TimeoutError, Exception, AQError) as e:
                 LOGGER.error(str(e))
         await sleep(3)
 

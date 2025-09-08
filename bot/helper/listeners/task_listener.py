@@ -315,48 +315,78 @@ class TaskListener(TaskConfig):
             and Config.DATABASE_URL
         ):
             await database.rm_complete_task(self.message.link)
-        msg = f"<b>Name: </b><code>{escape(self.name)}</code>\n\n<b>Size: </b>{get_readable_file_size(self.size)}"
+    
+        # Bagian Utama
+        msg = (
+            f"<b>📂 Name:</b>\n<code>{escape(self.name)}</code>\n\n"
+            f"<b>💾 Size:</b> {get_readable_file_size(self.size)}\n"
+        )
+    
         LOGGER.info(f"Task Done: {self.name}")
+    
+        # Mode Leech
         if self.is_leech:
-            msg += f"\n<b>Total Files: </b>{folders}"
+            msg += (
+                f"\n<b>📁 Total Files:</b> {folders}"
+            )
             if mime_type != 0:
-                msg += f"\n<b>Corrupted Files: </b>{mime_type}"
-            msg += f"\n<b>cc: </b>{self.tag}\n\n"
-            if not files:
-                await send_message(self.message, msg)
-            else:
+                msg += f"\n<b>⚠️ Corrupted Files:</b> {mime_type}"
+    
+            msg += f"\n\n<b>👤 cc:</b> {self.tag}\n"
+    
+            # Jika ada file link
+            if files:
                 fmsg = ""
-                for index, (link, name) in enumerate(files.items(), start=1):
-                    fmsg += f"{index}. <a href='{link}'>{name}</a>\n"
+                for index, (flink, fname) in enumerate(files.items(), start=1):
+                    fmsg += f"{index}. <a href='{flink}'>{fname}</a>\n"
+                    # Telegram limit
                     if len(fmsg.encode() + msg.encode()) > 4000:
-                        await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
+                        await send_message(
+                            self.message,
+                            f"{msg}\n<blockquote expandable>{fmsg}</blockquote>"
+                        )
                         await sleep(1)
                         fmsg = ""
-                if fmsg != "":
-                    await send_message(self.message, f"{msg}<blockquote expandable>{fmsg}</blockquote>")
+                if fmsg:
+                    await send_message(
+                        self.message,
+                        f"{msg}\n<blockquote expandable>{fmsg}</blockquote>"
+                    )
+            else:
+                await send_message(self.message, msg)
+    
+        # Mode Upload ke Drive / Rclone
         else:
-            msg += f"\n\n<b>Type: </b>{mime_type}"
+            msg += f"\n<b>📦 Type:</b> {mime_type}"
+    
             if mime_type == "Folder":
-                msg += f"\n<b>SubFolders: </b>{folders}"
-                msg += f"\n<b>Files: </b>{files}"
+                msg += (
+                    f"\n<b>📂 SubFolders:</b> {folders}"
+                    f"\n<b>📄 Files:</b> {files}"
+                )
+    
+            button = None
             if (
                 link
-                or rclone_path
-                and Config.RCLONE_SERVE_URL
+                or (rclone_path and Config.RCLONE_SERVE_URL)
                 and not self.private_link
             ):
                 buttons = ButtonMaker()
                 if link:
-                    buttons.url_button("Drive", link)
+                    buttons.url_button("📥 Drive", link)
                 else:
-                    msg += f"\n\nPath: <code>{rclone_path}</code>"
+                    msg += f"\n\n<b>📍 Path:</b>\n<code>{rclone_path}</code>"
+    
+                # Rclone serve URL
                 if rclone_path and Config.RCLONE_SERVE_URL and not self.private_link:
                     remote, rpath = rclone_path.split(":", 1)
                     url_path = rutils.quote(f"{rpath}")
                     share_url = f"{Config.RCLONE_SERVE_URL}/{remote}/{url_path}"
                     if mime_type == "Folder":
                         share_url += "/"
-                    buttons.url_button("Rclone", share_url)
+                    buttons.url_button("🔗 Rclone", share_url)
+    
+                # Index URL
                 if not rclone_path and dir_id:
                     INDEX_URL = ""
                     if self.private_link:
@@ -365,16 +395,20 @@ class TaskListener(TaskConfig):
                         INDEX_URL = Config.INDEX_URL
                     if INDEX_URL:
                         share_url = f"{INDEX_URL}findpath?id={dir_id}"
-                        buttons.url_button("Index", share_url)
+                        buttons.url_button("📑 Index", share_url)
                         if mime_type.startswith(("image", "video", "audio")):
                             share_urls = f"{INDEX_URL}findpath?id={dir_id}&view=true"
-                            buttons.url_button("View", share_urls)
+                            buttons.url_button("▶️ View", share_urls)
+    
                 button = buttons.build_menu(2)
             else:
-                msg += f"\n\nPath: <code>{rclone_path}</code>"
-                button = None
-            msg += f"\n\n<b>cc: </b>{self.tag}"
+                msg += f"\n\n<b>📍 Path:</b>\n<code>{rclone_path}</code>"
+    
+            # Tambahan cc
+            msg += f"\n\n<b>👤 cc:</b> {self.tag}"
+    
             await send_message(self.message, msg, button)
+
         if self.seed:
             await clean_target(self.up_dir)
             async with queue_dict_lock:

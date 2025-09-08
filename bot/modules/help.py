@@ -1,4 +1,5 @@
 from ..helper.ext_utils.bot_utils import COMMAND_USAGE, new_task
+from ..helper.telegram_helper.filters import CustomFilters
 from ..helper.ext_utils.help_messages import (
     YT_HELP_DICT,
     MIRROR_HELP_DICT,
@@ -6,7 +7,7 @@ from ..helper.ext_utils.help_messages import (
 )
 from ..helper.telegram_helper.button_build import ButtonMaker
 from ..helper.telegram_helper.message_utils import edit_message, delete_message, send_message
-from ..helper.ext_utils.help_messages import help_string
+from ..helper.ext_utils.help_messages import help_string, help_string_user, help_string_unauth
 
 
 @new_task
@@ -45,4 +46,9 @@ async def arg_usage(_, query):
 
 @new_task
 async def bot_help(_, message):
-    await send_message(message, help_string)
+    if await CustomFilters.sudo(_, message):
+        await send_message(message, help_string)
+    elif await CustomFilters.authorized(_, message):
+        await send_message(message, help_string_user)
+    else:
+        await send_message(message, help_string_unauth)

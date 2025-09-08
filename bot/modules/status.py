@@ -65,7 +65,7 @@ async def get_download_status(download):
     if tool in [
         "telegram",
         "yt-dlp",
-        "rclone",
+        "xone",
         "gDriveApi",
     ]:
         speed = download.speed()
@@ -83,8 +83,10 @@ async def status_pages(_, query):
     data = query.data.split()
     key = int(data[1])
     await query.answer()
+
     if data[2] == "ref":
         await update_status_message(key, force=True)
+
     elif data[2] in ["nex", "pre"]:
         async with task_dict_lock:
             if key in status_dict:
@@ -92,16 +94,20 @@ async def status_pages(_, query):
                     status_dict[key]["page_no"] += status_dict[key]["page_step"]
                 else:
                     status_dict[key]["page_no"] -= status_dict[key]["page_step"]
+
     elif data[2] == "ps":
         async with task_dict_lock:
             if key in status_dict:
                 status_dict[key]["page_step"] = int(data[3])
+
     elif data[2] == "st":
         async with task_dict_lock:
             if key in status_dict:
                 status_dict[key]["status"] = data[3]
         await update_status_message(key, force=True)
+
     elif data[2] == "ov":
+        # Hitung overall speed dari berbagai sumber
         ds, ss = await TorrentManager.overall_speed()
         if sabnzbd_client.LOGGED_IN:
             sds = await sabnzbd_client.get_downloads()
@@ -110,7 +116,10 @@ async def status_pages(_, query):
         if jdownloader.is_connected:
             jdres = await jdownloader.device.downloadcontroller.get_speed_in_bytes()
             ds += jdres
-        message = query.message
+
+        dl_speed, up_speed, seed_speed = ds, 0, ss
+
+        # Hitung jumlah task per status
         tasks = {
             "Download": 0,
             "Upload": 0,
@@ -127,9 +136,7 @@ async def status_pages(_, query):
             "ConvertMedia": 0,
             "FFmpeg": 0,
         }
-        dl_speed = ds
-        up_speed = 0
-        seed_speed = ss
+
         async with task_dict_lock:
             status_results = await gather(
                 *(get_download_status(download) for download in task_dict.values())
@@ -166,19 +173,28 @@ async def status_pages(_, query):
                     case MirrorStatus.STATUS_CONVERT:
                         tasks["ConvertMedia"] += 1
                     case MirrorStatus.STATUS_FFMPEG:
-                        tasks["FFMPEG"] += 1
+                        tasks["FFmpeg"] += 1
                     case _:
                         tasks["Download"] += 1
 
-        msg = f"""<b>DL:</b> {tasks['Download']} | <b>UP:</b> {tasks['Upload']} | <b>SD:</b> {tasks['Seed']} | <b>AR:</b> {tasks['Archive']}
-<b>EX:</b> {tasks['Extract']} | <b>SP:</b> {tasks['Split']} | <b>QD:</b> {tasks['QueueDl']} | <b>QU:</b> {tasks['QueueUp']}
-<b>CL:</b> {tasks['Clone']} | <b>CK:</b> {tasks['CheckUp']} | <b>PA:</b> {tasks['Pause']} | <b>SV:</b> {tasks['SamVid']}
-<b>CM:</b> {tasks['ConvertMedia']} | <b>FF:</b> {tasks['FFmpeg']}
+        # Format pesan overview
+        msg = (
+            f"<b>📊 Overall Tasks</b>\n\n"
+            f"<blockquote>"
+            f"• DL : <b>{tasks['Download']}</b> | UP : <b>{tasks['Upload']}</b> | SD : <b>{tasks['Seed']}</b>\n"
+            f"• AR : <b>{tasks['Archive']}</b> | EX : <b>{tasks['Extract']}</b> | SP : <b>{tasks['Split']}</b>\n"
+            f"• QD : <b>{tasks['QueueDl']}</b> | QU : <b>{tasks['QueueUp']}</b> | CL : <b>{tasks['Clone']}</b>\n"
+            f"• CK : <b>{tasks['CheckUp']}</b> | PA : <b>{tasks['Pause']}</b> | SV : <b>{tasks['SamVid']}</b>\n"
+            f"• CM : <b>{tasks['ConvertMedia']}</b> | FF : <b>{tasks['FFmpeg']}</b>"
+            f"</blockquote>\n\n"
+            f"<blockquote>"
+            f"• DL Speed : <code>{get_readable_file_size(dl_speed)}/s</code>\n"
+            f"• UP Speed : <code>{get_readable_file_size(up_speed)}/s</code>\n"
+            f"• SD Speed : <code>{get_readable_file_size(seed_speed)}/s</code>"
+            f"</blockquote>"
+        )
 
-<b>ODLS:</b> {get_readable_file_size(dl_speed)}/s
-<b>OULS:</b> {get_readable_file_size(up_speed)}/s
-<b>OSDS:</b> {get_readable_file_size(seed_speed)}/s
-"""
+        # Tombol
         button = ButtonMaker()
-        button.data_button("Back", f"status {data[1]} ref")
-        await edit_message(message, msg, button.build_menu())
+        button.data_button("⬅️ Back", f"status {data[1]} ref")
+        await edit_message(query.message, msg, button.build_menu())

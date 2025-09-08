@@ -243,11 +243,58 @@ async def set_aria2(gid, selected_files):
 
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
-    return (
-        "<h1>See mirror-leech-telegram-bot "
-        "<a href='https://www.github.com/anasty17/mirror-leech-telegram-bot'>@GitHub</a> "
-        "By <a href='https://github.com/anasty17'>Anas</a></h1>"
-    )
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mirror Leech Bot</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background-color: #0f172a;
+                color: #e2e8f0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                text-align: center;
+            }
+            .card {
+                background: #1e293b;
+                padding: 2rem;
+                border-radius: 1rem;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+                max-width: 500px;
+            }
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1rem;
+            }
+            a {
+                color: #38bdf8;
+                text-decoration: none;
+                font-weight: bold;
+            }
+            a:hover {
+                color: #0ea5e9;
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h1>🚀 Mirror Leech Telegram Bot</h1>
+            <p>See project at 
+                <a href="https://www.github.com/anasty17/mirror-leech-telegram-bot" target="_blank">GitHub</a>
+            </p>
+            <p>By <a href="https://github.com/anasty17" target="_blank">Anas</a></p>
+        </div>
+    </body>
+    </html>
+    """
 
 
 @app.exception_handler(Exception)

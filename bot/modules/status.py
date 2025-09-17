@@ -77,11 +77,23 @@ async def get_download_status(download):
         else download.status()
     ), speed
 
+# simpan waktu refresh terakhir per user
+last_refresh = {}
+REFRESH_COOLDOWN = 7  # detik
 
 @new_task
 async def status_pages(_, query):
     data = query.data.split()
     key = int(data[1])
+    user_id = query.from_user.id
+
+    # Cek cooldown
+    now = time()
+    if user_id in last_refresh and now - last_refresh[user_id] < REFRESH_COOLDOWN:
+        await query.answer("Don't touch me too much i'il cum!", show_alert=False)
+        return
+    last_refresh[user_id] = now
+
     await query.answer()
 
     if data[2] == "ref":

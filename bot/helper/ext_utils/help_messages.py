@@ -1,262 +1,316 @@
 from ..telegram_helper.bot_commands import BotCommands
 from ...core.mltb_client import TgClient
 
-mirror = """<b>Send link along with command line or </b>
+mirror = """<b>Kirim link bersama dengan perintah</b>:
 
 /cmd link
 
-<b>By replying to link/file</b>:
+<b>Dengan reply ke link/file</b>:
 
-/cmd -n new name -e -up upload destination
+/cmd -n nama baru -e -up tujuan upload
 
-<b>NOTE:</b>
-1. Commands that start with <b>qb</b> are ONLY for torrents."""
+<b>CATATAN:</b>
+1. Perintah yang diawali dengan <b>qb</b> HANYA untuk torrent."""
 
-yt = """<b>Send link along with command line</b>:
+yt = """<b>Kirim link bersama dengan perintah</b>:
 
 /cmd link
-<b>By replying to link</b>:
-/cmd -n new name -z password -opt x:y|x1:y1
 
-Check here all supported <a href='https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md'>SITES</a>
-Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L212'>FILE</a> or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to convert cli arguments to api options."""
+<b>Dengan reply ke link</b>:
+/cmd -n nama baru -z password -opt x:y|x1:y1
 
-clone = """Send Gdrive|Gdot|Filepress|Filebee|Appdrive|Gdflix link or rclone path along with command or by replying to the link/rc_path by command.
-Use -sync to use sync method in rclone. Example: /cmd rcl/rclone_path -up rcl/rclone_path/rc -sync"""
+Cek semua situs yang didukung di sini <a href='https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md'>SITES</a>
+Cek semua opsi yt-dlp api dari <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L212'>FILE</a> 
+atau gunakan <a href='https://t.me/mltb_official_channel/177'>script</a> ini untuk mengubah argumen CLI ke opsi API."""
 
-new_name = """<b>New Name</b>: -n
+clone = """Kirim link Gdrive|Gdot|Filepress|Filebee|Appdrive|Gdflix atau path rclone bersama dengan perintah, 
+atau dengan reply ke link/rc_path menggunakan perintah.
 
-/cmd link -n new name
-Note: Doesn't work with torrents"""
+Gunakan -sync untuk memakai metode sync di rclone. 
+Contoh: /cmd rcl/rclone_path -up rcl/rclone_path/rc -sync"""
 
-multi_link = """<b>Multi links only by replying to first link/file</b>: -i
+new_name = """<b>Nama Baru</b>: -n
 
-/cmd -i 10(number of links/files)"""
+/cmd link -n nama_baru
+Catatan: Tidak berfungsi dengan torrent"""
 
-same_dir = """<b>Move file(s)/folder(s) to new folder</b>: -m
+multi_link = """<b>Multi link hanya dengan reply ke link/file pertama</b>: -i
 
-You can use this arg also to move multiple links/torrents contents to the same directory, so all links will be uploaded together as one task
+/cmd -i 10(jumlah link/file)"""
 
-/cmd link -m new folder (only one link inside new folder)
-/cmd -i 10(number of links/files) -m folder name (all links contents in one folder)
-/cmd -b -m folder name (reply to batch of message/file(each link on new line))
+same_dir = """<b>Pindahkan file/folder ke folder baru</b>: -m
 
-While using bulk you can also use this arg with different folder name along with the links in message or file batch
-Example:
+Argumen ini juga bisa dipakai untuk memindahkan isi dari beberapa link/torrent ke direktori yang sama, 
+jadi semua link akan diupload bersama sebagai satu task.
+
+/cmd link -m folder_baru (hanya satu link di dalam folder baru)
+/cmd -i 10(jumlah link/file) -m nama_folder (semua isi link dalam satu folder)
+/cmd -b -m nama_folder (reply ke batch pesan/file (setiap link di baris baru))
+
+Saat menggunakan bulk, kamu juga bisa pakai argumen ini dengan nama folder berbeda 
+bersamaan dengan link di pesan atau batch file.
+Contoh:
 link1 -m folder1
 link2 -m folder1
 link3 -m folder2
 link4 -m folder2
 link5 -m folder3
 link6
-so link1 and link2 content will be uploaded from same folder which is folder1
-link3 and link4 content will be uploaded from same folder also which is folder2
-link5 will uploaded alone inside new folder named folder3
-link6 will get uploaded normally alone
+
+Maka:
+- link1 dan link2 akan diupload ke folder1
+- link3 dan link4 akan diupload ke folder2
+- link5 akan diupload sendiri ke folder3
+- link6 akan diupload normal sendiri
 """
 
-thumb = """<b>Thumbnail for current task</b>: -t
+thumb = """<b>Thumbnail untuk task saat ini</b>: -t
 
-/cmd link -t tg-message-link (doc or photo) or none (file without thumb)"""
+/cmd link -t tg-message-link (dokumen atau foto) atau none (file tanpa thumbnail)"""
 
-split_size = """<b>Split size for current task</b>: -sp
+split_size = """<b>Ukuran split untuk task saat ini</b>: -sp
 
-/cmd link -sp (500mb or 2gb or 4000000000)
-Note: Only mb and gb are supported or write in bytes without unit!"""
+/cmd link -sp (500mb atau 2gb atau 4000000000)
+Catatan: Hanya mb dan gb yang didukung atau tulis dalam byte tanpa satuan!"""
 
-upload = """<b>Upload Destination</b>: -up
+upload = """<b>Tujuan Upload</b>: -up
 
-/cmd link -up rcl/gdl (rcl: to select rclone config, remote & path | gdl: To select token.pickle, gdrive id) using buttons
-You can directly add the upload path: -up remote:dir/subdir or -up Gdrive_id or -up id/username (telegram) or -up id/username|topic_id (telegram)
-If DEFAULT_UPLOAD is `rc` then you can pass up: `gd` to upload using gdrive tools to GDRIVE_ID.
-If DEFAULT_UPLOAD is `gd` then you can pass up: `rc` to upload to RCLONE_PATH.
+/cmd link -up rcl/gdl 
+(rcl: untuk memilih config rclone, remote & path | gdl: untuk memilih token.pickle, id gdrive) dengan tombol.
+Kamu bisa langsung menambahkan path upload: 
+-up remote:dir/subdir atau -up Gdrive_id atau -up id/username (telegram) atau -up id/username|topic_id (telegram)
 
-If you want to add path or gdrive manually from your config/token (UPLOADED FROM USETTING) add mrcc: for rclone and mtp: before the path/gdrive_id without space.
-/cmd link -up mrcc:main:dump or -up mtp:gdrive_id <strong>or you can simply edit upload using owner/user token/config from usetting without adding mtp: or mrcc: before the upload path/id</strong>
+Jika DEFAULT_UPLOAD adalah `rc` maka bisa tambahkan up: `gd` untuk upload menggunakan gdrive tools ke GDRIVE_ID.  
+Jika DEFAULT_UPLOAD adalah `gd` maka bisa tambahkan up: `rc` untuk upload ke RCLONE_PATH.
 
-To add leech destination:
--up id/@username/pm
--up b:id/@username/pm (b: means leech by bot) (id or username of the chat or write pm means private message so bot will send the files in private to you)
-when you should use b:(leech by bot)? When your default settings is leech by user and you want to leech by bot for specific task.
--up u:id/@username(u: means leech by user) This incase OWNER added USER_STRING_SESSION.
--up h:id/@username(hybrid leech) h: to upload files by bot and user based on file size.
--up id/@username|topic_id(leech in specific chat and topic) add | without space and write topic id after chat id or username.
+Kalau mau menambahkan path atau gdrive manual dari config/token (UPLOAD DARI USETTING) gunakan `mrcc:` untuk rclone dan `mtp:` sebelum path/gdrive_id tanpa spasi.  
+Contoh:  
+/cmd link -up mrcc:main:dump  
+/cmd link -up mtp:gdrive_id  
+<strong>atau cukup edit upload menggunakan owner/user token/config dari usetting tanpa perlu menambahkan mtp: atau mrcc: di depan path/id</strong>
 
-In case you want to specify whether using token.pickle or service accounts you can add tp:gdrive_id (using token.pickle) or sa:gdrive_id (using service accounts) or mtp:gdrive_id (using token.pickle uploaded from usetting).
-DEFAULT_UPLOAD doesn't affect on leech cmds.
+Untuk menambahkan tujuan leech:  
+-up id/@username/pm  
+-up b:id/@username/pm (b: berarti leech oleh bot) (id atau username chat, atau tulis pm berarti private message sehingga bot mengirim file ke private)  
+Kapan gunakan b: (leech by bot)? Saat default setting kamu leech by user tapi ingin leech by bot di task tertentu.  
+
+-up u:id/@username (u: berarti leech oleh user) — berlaku jika OWNER menambahkan USER_STRING_SESSION.  
+-up h:id/@username (hybrid leech) — h: upload file oleh bot dan user berdasarkan ukuran file.  
+-up id/@username|topic_id (leech di chat & topik tertentu) tambahkan | tanpa spasi dan tuliskan topic id setelah chat id/username.
+
+Kalau mau tentukan penggunaan token.pickle atau service accounts:  
+- tp:gdrive_id (pakai token.pickle)  
+- sa:gdrive_id (pakai service accounts)  
+- mtp:gdrive_id (pakai token.pickle dari usetting)  
+
+DEFAULT_UPLOAD tidak berpengaruh pada perintah leech.
 """
 
 user_download = """<b>User Download</b>: link
 
-/cmd tp:link to download using owner token.pickle incase service account enabled.
-/cmd sa:link to download using service account incase service account disabled.
-/cmd tp:gdrive_id to download using token.pickle and file_id incase service account enabled.
-/cmd sa:gdrive_id to download using service account and file_id incase service account disabled.
-/cmd mtp:gdrive_id or mtp:link to download using user token.pickle uploaded from usetting
-/cmd mrcc:remote:path to download using user rclone config uploaded from usetting
-you can simply edit upload using owner/user token/config from usetting without adding mtp: or mrcc: before the path/id"""
+/cmd tp:link untuk download menggunakan owner token.pickle jika service account aktif.
+/cmd sa:link untuk download menggunakan service account jika service account nonaktif.
+/cmd tp:gdrive_id untuk download menggunakan token.pickle dan file_id jika service account aktif.
+/cmd sa:gdrive_id untuk download menggunakan service account dan file_id jika service account nonaktif.
+/cmd mtp:gdrive_id atau mtp:link untuk download menggunakan user token.pickle dari usetting.
+/cmd mrcc:remote:path untuk download menggunakan user rclone config dari usetting.
+Kamu juga bisa langsung edit upload menggunakan owner/user token/config dari usetting tanpa menambahkan mtp: atau mrcc: di depan path/id."""
 
 rcf = """<b>Rclone Flags</b>: -rcf
 
 /cmd link|path|rcl -up path|rcl -rcf --buffer-size:8M|--drive-starred-only|key|key:value
-This will override all other flags except --exclude
-Check here all <a href='https://rclone.org/flags/'>RcloneFlags</a>."""
+Argumen ini akan menimpa semua flag lain kecuali --exclude.
+Cek semua flag di sini <a href='https://rclone.org/flags/'>RcloneFlags</a>."""
 
 bulk = """<b>Bulk Download</b>: -b
 
-Bulk can be used only by replying to text message or text file contains links separated by new line.
-Example:
-link1 -n new name -up remote1:path1 -rcf |key:value|key:value
-link2 -z -n new name -up remote2:path2
-link3 -e -n new name -up remote2:path2
-Reply to this example by this cmd -> /cmd -b(bulk)
+Bulk hanya bisa dipakai dengan reply ke pesan teks atau file teks yang berisi daftar link (dipisah baris baru).
+Contoh:
+link1 -n nama_baru -up remote1:path1 -rcf |key:value|key:value
+link2 -z -n nama_baru -up remote2:path2
+link3 -e -n nama_baru -up remote2:path2
 
-Note: Any arg along with the cmd will be setted to all links
-/cmd -b -up remote: -z -m folder name (all links contents in one zipped folder uploaded to one destination)
-so you can't set different upload destinations along with link incase you have added -m along with cmd
-You can set start and end of the links from the bulk like seed, with -b start:end or only end by -b :end or only start by -b start.
-The default start is from zero(first link) to inf."""
+Reply contoh di atas dengan perintah -> /cmd -b (bulk)
+
+Catatan: Semua argumen yang ditambahkan bersama cmd akan diterapkan ke semua link.
+/cmd -b -up remote: -z -m nama_folder 
+(semua isi link akan di-zip dalam satu folder lalu diupload ke satu tujuan)
+
+Jadi kamu tidak bisa set tujuan upload berbeda bersamaan dengan link jika sudah menambahkan -m pada cmd.
+
+Kamu bisa tentukan start dan end dari link di bulk seperti seed, dengan:  
+- -b start:end  
+- -b :end (hanya end)  
+- -b start (hanya start)  
+
+Default start adalah dari nol (link pertama) sampai tak terbatas."""
 
 rlone_dl = """<b>Rclone Download</b>:
 
-Treat rclone paths exactly like links
-/cmd main:dump/ubuntu.iso or rcl(To select config, remote and path)
-Users can add their own rclone from user settings
-If you want to add path manually from your config add mrcc: before the path without space
+Perlakukan path rclone sama seperti link
+/cmd main:dump/ubuntu.iso atau rcl (untuk memilih config, remote dan path)
+User bisa menambahkan rclone sendiri dari user settings.
+Kalau mau menambahkan path manual dari config, tambahkan mrcc: di depan path tanpa spasi.
 /cmd mrcc:main:dump/ubuntu.iso
-You can simply edit using owner/user config from usetting without adding mrcc: before the path"""
+Kamu juga bisa langsung edit pakai config owner/user dari usetting tanpa menambahkan mrcc: di depan path."""
 
 extract_zip = """<b>Extract/Zip</b>: -e -z
 
-/cmd link -e password (extract password protected)
-/cmd link -z password (zip password protected)
-/cmd link -z password -e (extract and zip password protected)
-Note: When both extract and zip added with cmd it will extract first and then zip, so always extract first"""
+/cmd link -e password (ekstrak file dengan password)
+/cmd link -z password (zip file dengan password)
+/cmd link -z password -e (ekstrak lalu zip dengan password)
+Catatan: Jika keduanya (extract dan zip) ditambahkan dalam satu cmd, proses ekstrak dilakukan lebih dulu lalu di-zip. Jadi selalu ekstrak lebih dulu."""
 
-join = """<b>Join Splitted Files</b>: -j
+join = """<b>Gabung File Terpisah</b>: -j
 
-This option will only work before extract and zip, so mostly it will be used with -m argument (samedir)
-By Reply:
-/cmd -i 3 -j -m folder name
-/cmd -b -j -m folder name
-if u have link(folder) have splitted files:
+Opsi ini hanya bekerja sebelum extract dan zip, jadi umumnya dipakai bersama argumen -m (samedir).
+Dengan Reply:
+/cmd -i 3 -j -m nama_folder
+/cmd -b -j -m nama_folder
+
+Jika kamu punya link (folder) berisi file terpisah:
 /cmd link -j"""
 
-tg_links = """<b>TG Links</b>:
+tg_links = """<b>Link Telegram (TG Links)</b>:
 
-Treat links like any direct link
-Some links need user access so you must add USER_SESSION_STRING for it.
-Three types of links:
-Public: https://t.me/channel_name/message_id
+Perlakukan link Telegram sama seperti direct link.
+Beberapa link butuh akses user, jadi kamu harus menambahkan USER_SESSION_STRING untuk menggunakannya.
+
+Tiga tipe link:
+Publik: https://t.me/channel_name/message_id
 Private: tg://openmessage?user_id=xxxxxx&message_id=xxxxx
 Super: https://t.me/c/channel_id/message_id
 Range: https://t.me/channel_name/first_message_id-last_message_id
-Range Example: tg://openmessage?user_id=xxxxxx&message_id=555-560 or https://t.me/channel_name/100-150
-Note: Range link will work only by replying cmd to it"""
+
+Contoh Range: 
+tg://openmessage?user_id=xxxxxx&message_id=555-560  
+atau  
+https://t.me/channel_name/100-150  
+
+Catatan: Link Range hanya bisa dipakai dengan reply cmd ke link tersebut."""
 
 sample_video = """<b>Sample Video</b>: -sv
 
-Create sample video for one video or folder of videos.
-/cmd -sv (it will take the default values which 60sec sample duration and part duration is 4sec).
-You can control those values. Example: /cmd -sv 70:5(sample-duration:part-duration) or /cmd -sv :5 or /cmd -sv 70."""
+Buat video sampel dari satu video atau folder berisi video.
+/cmd -sv (akan memakai nilai default: durasi sampel 60 detik dan durasi per bagian 4 detik).
+Kamu bisa atur nilainya. Contoh:
+/cmd -sv 70:5 (sample-duration:part-duration)
+/cmd -sv :5
+/cmd -sv 70"""
 
-screenshot = """<b>ScreenShots</b>: -ss
+screenshot = """<b>Screenshot</b>: -ss
 
-Create screenshots for one video or folder of videos.
-/cmd -ss (it will take the default values which is 10 photos).
-You can control this value. Example: /cmd -ss 6."""
+Buat screenshot dari satu video atau folder berisi video.
+/cmd -ss (akan memakai nilai default: 10 foto).
+Kamu bisa ubah nilainya. Contoh:
+/cmd -ss 6"""
 
-seed = """<b>Bittorrent seed</b>: -d
+seed = """<b>Bittorrent Seed</b>: -d
 
-/cmd link -d ratio:seed_time or by replying to file/link
-To specify ratio and seed time add -d ratio:time.
-Example: -d 0.7:10 (ratio and time) or -d 0.7 (only ratio) or -d :10 (only time) where time in minutes"""
+/cmd link -d ratio:seed_time atau dengan reply ke file/link.
+Untuk menentukan ratio dan waktu seeding tambahkan -d ratio:time.
+Contoh:
+-d 0.7:10 (ratio dan waktu)
+/cmd link -d 0.7 (hanya ratio)
+/cmd link -d :10 (hanya waktu, dalam menit)"""
 
 zip_arg = """<b>Zip</b>: -z password
 
 /cmd link -z (zip)
-/cmd link -z password (zip password protected)"""
+/cmd link -z password (zip dengan password)"""
 
-qual = """<b>Quality Buttons</b>: -s
+qual = """<b>Tombol Kualitas</b>: -s
 
-In case default quality added from yt-dlp options using format option and you need to select quality for specific link or links with multi links feature.
+Jika default quality ditentukan dari opsi yt-dlp menggunakan format option, 
+dan kamu ingin memilih kualitas untuk link tertentu atau untuk link dengan fitur multi-link.
 /cmd link -s"""
 
-yt_opt = """<b>Options</b>: -opt
+yt_opt = """<b>Opsi</b>: -opt
 
 /cmd link -opt {"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
 
-Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>FILE</a> or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to convert cli arguments to api options."""
+Cek semua opsi yt-dlp API di <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>FILE</a> 
+atau gunakan <a href='https://t.me/mltb_official_channel/177'>script ini</a> untuk mengubah argumen CLI ke opsi API."""
 
-convert_media = """<b>Convert Media</b>: -ca -cv
-/cmd link -ca mp3 -cv mp4 (convert all audios to mp3 and all videos to mp4)
-/cmd link -ca mp3 (convert all audios to mp3)
-/cmd link -cv mp4 (convert all videos to mp4)
-/cmd link -ca mp3 + flac ogg (convert only flac and ogg audios to mp3)
-/cmd link -cv mkv - webm flv (convert all videos to mp4 except webm and flv)"""
+convert_media = """<b>Konversi Media</b>: -ca -cv
+
+/cmd link -ca mp3 -cv mp4 (konversi semua audio ke mp3 dan semua video ke mp4)
+/cmd link -ca mp3 (konversi semua audio ke mp3)
+/cmd link -cv mp4 (konversi semua video ke mp4)
+/cmd link -ca mp3 + flac ogg (hanya konversi audio flac dan ogg ke mp3)
+/cmd link -cv mkv - webm flv (konversi semua video ke mp4 kecuali webm dan flv)"""
 
 force_start = """<b>Force Start</b>: -f -fd -fu
-/cmd link -f (force download and upload)
-/cmd link -fd (force download only)
-/cmd link -fu (force upload directly after download finish)"""
+/cmd link -f (paksa download dan upload)
+/cmd link -fd (paksa download saja)
+/cmd link -fu (paksa upload langsung setelah download selesai)"""
 
 gdrive = """<b>Gdrive</b>: link
-If DEFAULT_UPLOAD is `rc` then you can pass up: `gd` to upload using gdrive tools to GDRIVE_ID.
-/cmd gdriveLink or gdl or gdriveId -up gdl or gdriveId or gd
-/cmd tp:gdriveLink or tp:gdriveId -up tp:gdriveId or gdl or gd (to use token.pickle if service account enabled)
-/cmd sa:gdriveLink or sa:gdriveId -p sa:gdriveId or gdl or gd (to use service account if service account disabled)
-/cmd mtp:gdriveLink or mtp:gdriveId -up mtp:gdriveId or gdl or gd(if you have added upload gdriveId from usetting) (to use user token.pickle that uploaded by usetting)
-You can simply edit using owner/user token from usetting without adding mtp: before the id"""
+Jika DEFAULT_UPLOAD adalah `rc`, maka bisa pakai up: `gd` untuk upload menggunakan gdrive tools ke GDRIVE_ID.
+/cmd gdriveLink atau gdl atau gdriveId -up gdl atau gdriveId atau gd
+/cmd tp:gdriveLink atau tp:gdriveId -up tp:gdriveId atau gdl atau gd (pakai token.pickle jika service account aktif)
+/cmd sa:gdriveLink atau sa:gdriveId -p sa:gdriveId atau gdl atau gd (pakai service account jika service account nonaktif)
+/cmd mtp:gdriveLink atau mtp:gdriveId -up mtp:gdriveId atau gdl atau gd (jika sudah menambahkan upload gdriveId dari usetting) (pakai user token.pickle dari usetting)
+Kamu juga bisa langsung edit pakai owner/user token dari usetting tanpa menambahkan mtp: di depan id"""
 
 rclone_cl = """<b>Rclone</b>: path
-If DEFAULT_UPLOAD is `gd` then you can pass up: `rc` to upload to RCLONE_PATH.
+Jika DEFAULT_UPLOAD adalah `gd`, maka bisa pakai up: `rc` untuk upload ke RCLONE_PATH.
 /cmd rcl/rclone_path -up rcl/rclone_path/rc -rcf flagkey:flagvalue|flagkey|flagkey:flagvalue
-/cmd rcl or rclone_path -up rclone_path or rc or rcl
-/cmd mrcc:rclone_path -up rcl or rc(if you have add rclone path from usetting) (to use user config)
-You can simply edit using owner/user config from usetting without adding mrcc: before the path"""
+/cmd rcl atau rclone_path -up rclone_path atau rc atau rcl
+/cmd mrcc:rclone_path -up rcl atau rc (jika sudah menambahkan rclone path dari usetting) (pakai user config)
+Kamu juga bisa langsung edit pakai owner/user config dari usetting tanpa menambahkan mrcc: di depan path"""
 
-name_sub = r"""<b>Name Substitution</b>: -ns
+name_sub = r"""<b>Penggantian Nama (Name Substitution)</b>: -ns
 /cmd link -ns script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
-This will affect on all files. Format: wordToReplace/wordToReplaceWith/sensitiveCase
-Word Subtitions. You can add pattern instead of normal text. Timeout: 60 sec
-NOTE: You must add \ before any character, those are the characters: \^$.|?*+()[]{}-
-1. script will get replaced by code with sensitive case
-2. mirror will get replaced by leech
-4. tea will get replaced by space with sensitive case
-5. clone will get removed
-6. cpu will get replaced by space
-7. [mltb] will get replaced by mltb
-8. \text\ will get replaced by text with sensitive case
+Ini akan berpengaruh ke semua file. Format: kataDiganti/kataPengganti/sensitiveCase
+Penggantian kata bisa juga dengan pola (pattern) bukan teks biasa. Timeout: 60 detik
+CATATAN: Kamu harus menambahkan \ sebelum karakter spesial berikut: \^$.|?*+()[]{}
+1. script akan diganti dengan code (case sensitive)
+2. mirror akan diganti dengan leech
+3. tea akan diganti dengan spasi (case sensitive)
+4. clone akan dihapus
+5. cpu akan diganti dengan spasi
+6. [mltb] akan diganti dengan mltb
+7. \text\ akan diganti dengan text (case sensitive)
 """
 
-transmission = """<b>Tg transmission</b>: -hl -ut -bt
-/cmd link -hl (leech by user and bot session with respect to size) (Hybrid Leech)
-/cmd link -bt (leech by bot session)
-/cmd link -ut (leech by user)"""
+transmission = """<b>Tg Transmission</b>: -hl -ut -bt
+/cmd link -hl (leech oleh user dan bot session sesuai ukuran) (Hybrid Leech)
+/cmd link -bt (leech dengan bot session)
+/cmd link -ut (leech dengan user)"""
 
-thumbnail_layout = """Thumbnail Layout: -tl
-/cmd link -tl 3x3 (widthxheight) 3 photos in row and 3 photos in column"""
+thumbnail_layout = """<b>Thumbnail Layout</b>: -tl
+/cmd link -tl 3x3 (widthxheight) → 3 foto per baris dan 3 foto per kolom"""
 
-leech_as = """<b>Leech as</b>: -doc -med
-/cmd link -doc (Leech as document)
-/cmd link -med (Leech as media)"""
+leech_as = """<b>Leech sebagai</b>: -doc -med
+/cmd link -doc (Leech sebagai dokumen)
+/cmd link -med (Leech sebagai media)"""
 
-ffmpeg_cmds = """<b>FFmpeg Commands</b>: -ff
-list of lists of ffmpeg commands. You can set multiple ffmpeg commands for all files before upload. Don't write ffmpeg at beginning, start directly with the arguments.
-Notes:
-1. Add <code>-del</code> to the list(s) which you want from the bot to delete the original files after command run complete!
-3. To execute one of pre-added lists in bot like: ({"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv"]}), you must use -ff subtitle (list key)
-Examples: ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb", "-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt", "-i mltb -i tg://openmessage?user_id=5272663208&message_id=322801 -filter_complex 'overlay=W-w-10:H-h-10' -c:a copy mltb"]
-Here I will explain how to use mltb.* which is reference to files you want to work on.
-1. First cmd: the input is mltb.mkv so this cmd will work only on mkv videos and the output is mltb.mkv also so all outputs is mkv. -del will delete the original media after complete run of the cmd.
-2. Second cmd: the input is mltb.video so this cmd will work on all videos and the output is only mltb so the extenstion is same as input files.
-3. Third cmd: the input in mltb.m4a so this cmd will work only on m4a audios and the output is mltb.mp3 so the output extension is mp3.
-4. Fourth cmd: the input is mltb.audio so this cmd will work on all audios and the output is mltb.mp3 so the output extension is mp3.
-5. Fifth cmd: You can add telegram link for small size input like photo to set watermark"""
+ffmpeg_cmds = """<b>Perintah FFmpeg</b>: -ff
+List berisi kumpulan perintah ffmpeg. Kamu bisa set banyak perintah ffmpeg untuk semua file sebelum upload. Jangan tulis ffmpeg di awal, langsung mulai dengan argumennya.
+Catatan:
+1. Tambahkan <code>-del</code> pada list yang ingin kamu hapus file aslinya setelah perintah selesai dijalankan!
+2. Untuk menjalankan salah satu list yang sudah ditambahkan di bot, misalnya: ({"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv"]}), gunakan -ff subtitle (key list).
+
+Contoh:
+["-i mltb.mkv -c copy -c:s srt mltb.mkv",
+ "-i mltb.video -c copy -c:s srt mltb",
+ "-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3",
+ "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3",
+ "-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt",
+ "-i mltb -i tg://openmessage?user_id=5272663208&message_id=322801 -filter_complex 'overlay=W-w-10:H-h-10' -c:a copy mltb"]
+
+Penjelasan penggunaan mltb.* (referensi file yang diproses):
+1. Cmd pertama: input mltb.mkv → hanya jalan untuk video mkv, output juga mltb.mkv, jadi semua output tetap mkv. Tambahkan -del untuk hapus file asli setelah selesai.
+2. Cmd kedua: input mltb.video → jalan untuk semua video, output hanya mltb → ekstensi ikut input aslinya.
+3. Cmd ketiga: input mltb.m4a → hanya untuk audio m4a, output mltb.mp3 → hasilnya mp3.
+4. Cmd keempat: input mltb.audio → untuk semua audio, output mltb.mp3 → hasil mp3.
+5. Cmd kelima: kamu bisa pakai link Telegram untuk input kecil seperti foto agar bisa ditambahkan watermark.
+"""
 
 YT_HELP_DICT = {
     "main": yt,
-    "New-Name": f"{new_name}\nNote: Don't add file extension",
+    "New-Name": f"{new_name}\nCatatan: Jangan tambahkan ekstensi file",
     "Zip": zip_arg,
     "Quality": qual,
     "Options": yt_opt,
@@ -281,10 +335,10 @@ YT_HELP_DICT = {
 MIRROR_HELP_DICT = {
     "main": mirror,
     "New-Name": new_name,
-    "DL-Auth": "<b>Direct link authorization</b>: -au -ap\n\n/cmd link -au username -ap password",
-    "Headers": "<b>Direct link custom headers</b>: -h\n\n/cmd link -h key:value|key1:value1",
+    "DL-Auth": "<b>Otorisasi direct link</b>: -au -ap\n\n/cmd link -au username -ap password",
+    "Headers": "<b>Header custom direct link</b>: -h\n\n/cmd link -h key:value|key1:value1",
     "Extract/Zip": extract_zip,
-    "Select-Files": "<b>Bittorrent/JDownloader/Sabnzbd File Selection</b>: -s\n\n/cmd link -s or by replying to file/link",
+    "Select-Files": "<b>Pemilihan file Bittorrent/JDownloader/Sabnzbd</b>: -s\n\n/cmd link -s atau dengan reply ke file/link",
     "Torrent-Seed": seed,
     "Multi-Link": multi_link,
     "Same-Directory": same_dir,
@@ -317,78 +371,89 @@ CLONE_HELP_DICT = {
 }
 
 RSS_HELP_MESSAGE = """
-Use this format to add feed url:
-Title1 link (required)
-Title2 link -c cmd -inf xx -exf xx
-Title3 link -c cmd -d ratio:time -z password
+Gunakan format ini untuk menambahkan feed url:
+Judul1 link (wajib)
+Judul2 link -c cmd -inf xx -exf xx
+Judul3 link -c cmd -d ratio:time -z password
 
 -c command -up mrcc:remote:path/subdir -rcf --buffer-size:8M|key|key:value
--inf For included words filter.
--exf For excluded words filter.
--stv true or false (sensitive filter)
+-inf Filter untuk kata yang harus ada.
+-exf Filter untuk kata yang harus tidak ada.
+-stv true atau false (filter sensitif)
 
-Example: Title https://www.rss-url.com -inf 1080 or 720 or 144p|mkv or mp4|hevc -exf flv or web|xxx
-This filter will parse links that its titles contain `(1080 or 720 or 144p) and (mkv or mp4) and hevc` and doesn't contain (flv or web) and xxx words. You can add whatever you want.
+Contoh:
+Judul https://www.rss-url.com -inf 1080 or 720 or 144p|mkv or mp4|hevc -exf flv or web|xxx
+Filter ini akan memproses link yang judulnya berisi (1080 atau 720 atau 144p) dan (mkv atau mp4) dan hevc
+serta tidak mengandung (flv atau web) dan kata xxx.
 
-Another example: -inf  1080  or 720p|.web. or .webrip.|hvec or x264. This will parse titles that contain ( 1080  or 720p) and (.web. or .webrip.) and (hvec or x264). I have added space before and after 1080 to avoid wrong matching. If this `10805695` number in title it will match 1080 if added 1080 without spaces after it.
+Contoh lain:
+-inf  1080  or 720p|.web. or .webrip.|hvec or x264
+Ini akan memproses judul yang mengandung (1080 atau 720p) dan (.web. atau .webrip.) dan (hvec atau x264).
+Tambahkan spasi sebelum dan sesudah 1080 untuk menghindari salah pencocokan.
+Kalau di judul ada angka 10805695, itu bisa cocok ke 1080 jika tidak menambahkan spasi.
 
-Filter Notes:
-1. | means and.
-2. Add `or` between similar keys, you can add it between qualities or between extensions, so don't add filter like this f: 1080|mp4 or 720|web because this will parse 1080 and (mp4 or 720) and web ... not (1080 and mp4) or (720 and web).
-3. You can add `or` and `|` as much as you want.
-4. Take a look at the title if it has a static special character after or before the qualities or extensions or whatever and use them in the filter to avoid wrong match.
-Timeout: 60 sec.
+Catatan Filter:
+1. | berarti dan
+2. Gunakan or di antara kunci yang mirip (kualitas/ekstensi). 
+   Jangan buat seperti: 1080|mp4 or 720|web
+   Karena itu akan diproses sebagai 1080 dan (mp4 atau 720) dan web,
+   bukan (1080 dan mp4) atau (720 dan web).
+3. Kamu bisa menambahkan or dan | sebanyak yang kamu mau.
+4. Perhatikan judul. Jika ada karakter khusus (titik, strip, dll.)
+   sebelum/ sesudah kualitas atau ekstensi, tambahkan juga di filter.
+
+Batas waktu: 60 detik.
 """
 
 PASSWORD_ERROR_MESSAGE = """
-<b>This link requires a password!</b>
-- Insert <b>::</b> after the link and write the password after the sign.
+<b>Link ini membutuhkan password!</b>
+- Tambahkan <b>::</b> setelah link lalu tuliskan password setelah tanda tersebut.
 
-<b>Example:</b> link::my password
+<b>Contoh:</b> link::passwordku
 """
 
 user_settings_text = {
-    "LEECH_SPLIT_SIZE": f"Send Leech split size in bytes or use gb or mb. Example: 40000000 or 2.5gb or 1000mb. IS_PREMIUM_USER: {TgClient.IS_PREMIUM_USER}. Timeout: 60 sec",
-    "LEECH_DUMP_CHAT": """"Send leech destination ID/USERNAME/PM. 
-* b:id/@username/pm (b: means leech by bot) (id or username of the chat or write pm means private message so bot will send the files in private to you) when you should use b:(leech by bot)? When your default settings is leech by user and you want to leech by bot for specific task.
-* u:id/@username(u: means leech by user) This incase OWNER added USER_STRING_SESSION.
-* h:id/@username(hybrid leech) h: to upload files by bot and user based on file size.
-* id/@username|topic_id(leech in specific chat and topic) add | without space and write topic id after chat id or username. Timeout: 60 sec""",
-    "LEECH_FILENAME_PREFIX": r"Send Leech Filename Prefix. You can add HTML tags. Example: <code>@mychannel</code>. Timeout: 60 sec",
-    "THUMBNAIL_LAYOUT": "Send thumbnail layout (widthxheight, 2x2, 3x3, 2x4, 4x4, ...). Example: 3x3. Timeout: 60 sec",
-    "RCLONE_PATH": "Send Rclone Path. If you want to use your rclone config edit using owner/user config from usetting or add mrcc: before rclone path. Example mrcc:remote:folder. Timeout: 60 sec",
-    "RCLONE_FLAGS": "key:value|key|key|key:value . Check here all <a href='https://rclone.org/flags/'>RcloneFlags</a>\nEx: --buffer-size:8M|--drive-starred-only",
-    "GDRIVE_ID": "Send Gdrive ID. If you want to use your token.pickle edit using owner/user token from usetting or add mtp: before the id. Example: mtp:F435RGGRDXXXXXX . Timeout: 60 sec",
-    "INDEX_URL": "Send Index URL. Timeout: 60 sec",
-    "UPLOAD_PATHS": "Send Dict of keys that have path values. Example: {'path 1': 'remote:rclonefolder', 'path 2': 'gdrive1 id', 'path 3': 'tg chat id', 'path 4': 'mrcc:remote:', 'path 5': b:@username} . Timeout: 60 sec",
-    "EXCLUDED_EXTENSIONS": "Send exluded extenions separated by space without dot at beginning. Timeout: 60 sec",
-    "NAME_SUBSTITUTE": r"""Word Subtitions. You can add pattern instead of normal text. Timeout: 60 sec
-NOTE: You must add \ before any character, those are the characters: \^$.|?*+()[]{}-
-Example: script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
-1. script will get replaced by code with sensitive case
-2. mirror will get replaced by leech
-4. tea will get replaced by space with sensitive case
-5. clone will get removed
-6. cpu will get replaced by space
-7. [mltb] will get replaced by mltb
-8. \text\ will get replaced by text with sensitive case
+"LEECH_SPLIT_SIZE": f"Kirim ukuran split Leech dalam bytes atau gunakan gb/mb. Contoh: 40000000 atau 2.5gb atau 1000mb. IS_PREMIUM_USER: {TgClient.IS_PREMIUM_USER}. Batas waktu: 60 detik",
+"LEECH_DUMP_CHAT": """"Kirim ID/USERNAME/PM tujuan leech. 
+* b:id/@username/pm (b: artinya leech oleh bot) (id atau username chat atau tulis pm artinya pesan pribadi sehingga bot akan mengirim file ke private chat denganmu). Kapan pakai b: (leech oleh bot)? Saat pengaturan default kamu leech by user tapi ingin leech by bot untuk task tertentu.
+* u:id/@username (u: artinya leech oleh user) Ini jika OWNER menambahkan USER_STRING_SESSION.
+* h:id/@username (hybrid leech) h: untuk upload file dengan bot dan user berdasarkan ukuran file.
+* id/@username|topic_id (leech di chat dan topik tertentu) tambahkan | tanpa spasi lalu tulis topic id setelah chat id atau username. Batas waktu: 60 detik""",
+"LEECH_FILENAME_PREFIX": r"Kirim Prefix Nama File Leech. Bisa menambahkan HTML tags. Contoh: <code>@mychannel</code>. Batas waktu: 60 detik",
+"THUMBNAIL_LAYOUT": "Kirim layout thumbnail (widthxheight, 2x2, 3x3, 2x4, 4x4, ...). Contoh: 3x3. Batas waktu: 60 detik",
+"RCLONE_PATH": "Kirim Rclone Path. Jika ingin menggunakan config rclone edit pakai owner/user config dari usetting atau tambahkan mrcc: sebelum rclone path. Contoh mrcc:remote:folder. Batas waktu: 60 detik",
+"RCLONE_FLAGS": "key:value|key|key|key:value . Cek semua di <a href='https://rclone.org/flags/'>RcloneFlags</a>\nContoh: --buffer-size:8M|--drive-starred-only",
+"GDRIVE_ID": "Kirim Gdrive ID. Jika ingin pakai token.pickle edit dengan owner/user token dari usetting atau tambahkan mtp: sebelum id. Contoh: mtp:F435RGGRDXXXXXX . Batas waktu: 60 detik",
+"INDEX_URL": "Kirim Index URL. Batas waktu: 60 detik",
+"UPLOAD_PATHS": "Kirim Dict dari key yang punya nilai path. Contoh: {'path 1': 'remote:rclonefolder', 'path 2': 'gdrive1 id', 'path 3': 'tg chat id', 'path 4': 'mrcc:remote:', 'path 5': b:@username} . Batas waktu: 60 detik",
+"EXCLUDED_EXTENSIONS": "Kirim ekstensi yang dikecualikan, dipisahkan dengan spasi tanpa titik di awal. Batas waktu: 60 detik",
+"NAME_SUBSTITUTE": r"""Substitusi Kata. Bisa menambahkan pola (pattern) bukan hanya teks normal. Batas waktu: 60 detik
+CATATAN: Harus tambahkan \ sebelum karakter spesial berikut: \^$.|?*+()[]{}-
+Contoh: script/code/s | mirror/leech | tea/ /s | clone | cpu/ | \[mltb\]/mltb | \\text\\/text/s
+1. script akan diganti dengan code (case sensitif)
+2. mirror akan diganti dengan leech
+4. tea akan diganti dengan spasi (case sensitif)
+5. clone akan dihapus
+6. cpu akan diganti dengan spasi
+7. [mltb] akan diganti dengan mltb
+8. \text\ akan diganti dengan text (case sensitif)
 """,
-    "YT_DLP_OPTIONS": """Send dict of YT-DLP Options. Timeout: 60 sec
+"YT_DLP_OPTIONS": """Kirim dict opsi YT-DLP. Batas waktu: 60 detik
 Format: {key: value, key: value, key: value}.
-Example: {"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
-Check all yt-dlp api options from this <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>FILE</a> or use this <a href='https://t.me/mltb_official_channel/177'>script</a> to convert cli arguments to api options.""",
-    "FFMPEG_CMDS": """Dict of list values of ffmpeg commands. You can set multiple ffmpeg commands for all files before upload. Don't write ffmpeg at beginning, start directly with the arguments.
-Examples: {"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb"], "convert": ["-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3"], "extract": ["-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"], "metadata": ["-i mltb.mkv -map 0 -map -0:v:1 -map -0:s -map 0:s:0 -map -0:v:m:attachment -c copy -metadata:s:v:0 title={title} -metadata:s:a:0 title={title} -metadata:s:a:1 title={title2} -metadata:s:a:2 title={title2} -c:s srt -metadata:s:s:0 title={title3} mltb -y -del"], "watermark": ["-i mltb -i tg://openmessage?user_id=5272663208&message_id=322801 -filter_complex 'overlay=W-w-10:H-h-10' -c:a copy mltb"]}
-Notes:
-- Add `-del` to the list which you want from the bot to delete the original files after command run complete!
-- To execute one of those lists in bot for example, you must use -ff subtitle (list key) or -ff convert (list key)
-Here I will explain how to use mltb.* which is reference to files you want to work on.
-1. First cmd: the input is mltb.mkv so this cmd will work only on mkv videos and the output is mltb.mkv also so all outputs is mkv. -del will delete the original media after complete run of the cmd.
-2. Second cmd: the input is mltb.video so this cmd will work on all videos and the output is only mltb so the extenstion is same as input files.
-3. Third cmd: the input in mltb.m4a so this cmd will work only on m4a audios and the output is mltb.mp3 so the output extension is mp3.
-4. Fourth cmd: the input is mltb.audio so this cmd will work on all audios and the output is mltb.mp3 so the output extension is mp3.
-5. FFmpeg Variables in last cmd which is metadata ({title}, {title2}, etc...), you can edit them in usetting
-6. Telegram link for small size inputs like photo to set watermark.""",
+Contoh: {"format": "bv*+mergeall[vcodec=none]", "nocheckcertificate": True, "playliststart": 10, "fragment_retries": float("inf"), "matchtitle": "S13", "writesubtitles": True, "live_from_start": True, "postprocessor_args": {"ffmpeg": ["-threads", "4"]}, "wait_for_video": (5, 100), "download_ranges": [{"start_time": 0, "end_time": 10}]}
+Cek semua opsi api yt-dlp di <a href='https://github.com/yt-dlp/yt-dlp/blob/master/yt_dlp/YoutubeDL.py#L184'>FILE</a> atau gunakan <a href='https://t.me/mltb_official_channel/177'>script ini</a> untuk mengubah argumen CLI jadi opsi API.""",
+"FFMPEG_CMDS": """Dict berisi list command ffmpeg. Bisa atur banyak command ffmpeg untuk semua file sebelum upload. Jangan tulis ffmpeg di awal, langsung tulis argumennya.
+Contoh: {"subtitle": ["-i mltb.mkv -c copy -c:s srt mltb.mkv", "-i mltb.video -c copy -c:s srt mltb"], "convert": ["-i mltb.m4a -c:a libmp3lame -q:a 2 mltb.mp3", "-i mltb.audio -c:a libmp3lame -q:a 2 mltb.mp3"], "extract": ["-i mltb -map 0:a -c copy mltb.mka -map 0:s -c copy mltb.srt"], "metadata": ["-i mltb.mkv -map 0 -map -0:v:1 -map -0:s -map 0:s:0 -map -0:v:m:attachment -c copy -metadata:s:v:0 title={title} -metadata:s:a:0 title={title} -metadata:s:a:1 title={title2} -metadata:s:a:2 title={title2} -c:s srt -metadata:s:s:0 title={title3} mltb -y -del"], "watermark": ["-i mltb -i tg://openmessage?user_id=5272663208&message_id=322801 -filter_complex 'overlay=W-w-10:H-h-10' -c:a copy mltb"]}
+Catatan:
+- Tambahkan `-del` di list jika ingin bot menghapus file asli setelah command selesai!
+- Untuk menjalankan salah satu list di bot, misalnya: pakai -ff subtitle (nama list key) atau -ff convert (nama list key)
+Penjelasan mltb.* adalah referensi file yang akan diproses:
+1. Cmd pertama: input mltb.mkv → hanya jalan di video mkv, output juga mkv. -del akan hapus file asli setelah selesai.
+2. Cmd kedua: input mltb.video → jalan di semua video, output mltb (ekstensi sama dengan input).
+3. Cmd ketiga: input mltb.m4a → hanya jalan di audio m4a, output mltb.mp3.
+4. Cmd keempat: input mltb.audio → jalan di semua audio, output mltb.mp3.
+5. Variabel FFmpeg di cmd metadata ({title}, {title2}, dst...), bisa diubah di usetting.
+6. Link Telegram bisa dipakai untuk input kecil seperti foto untuk watermark.""",
 }
 
 

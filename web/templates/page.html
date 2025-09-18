@@ -237,17 +237,20 @@
             color: hsl(224 71% 4%);
         }
 
-        header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        header, footer {
+            background: rgba(0, 0, 0, 0.7); /* hitam semi-transparan */
             padding: 2rem 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px); /* efek kaca/glossy */
         }
-
-        footer {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem 0;
-            box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: auto;
+        
+        /* Card transparan */
+        .card {
+            background: rgba(0, 0, 0, 0.5); /* transparan */
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+            color: #fff; /* supaya tulisan terlihat */
         }
 
         .social-button {
@@ -354,8 +357,7 @@
     <header>
         <div class="container mx-auto px-4">
             <div class="flex flex-col sm:flex-row justify-between items-center">
-                <h1 class="text-3xl font-bold text-white mb-4 sm:mb-0">🗂 Torrent
-                    File Selector</h1>
+                <h1 class="text-3xl font-bold text-white mb-4 sm:mb-0">📂 My Torrent Selector</h1>
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center">
                         <span id="themeIcon" class="mr-2 text-white">🌙</span>
@@ -371,31 +373,31 @@
 
     <main class="flex-grow container mx-auto p-4">
         <div id="pinEntry" class="card p-6 mb-4 pin-entry">
-            <h2 class="text-xl font-bold mb-4">Enter PIN</h2>
+            <h2 class="text-xl font-bold mb-4">Masukan PIN</h2>
             <input type="text" id="pinInput"
-                title="Enter the code that you have got from Telegram to access the Torrent"
-                class="bg-gray-700 text-white p-2 rounded mb-4 w-full" placeholder="Enter PIN">
-            <button id="submitPin" class="btn btn-primary">Submit</button>
+                title="Masukkan kode yang kamu dapatkan dari Telegram untuk mengakses Torrent"
+                class="bg-gray-700 text-white p-2 rounded mb-4 w-full" placeholder="PIN">
+            <button id="submitPin" class="btn btn-primary">Masuk</button>
         </div>
 
         <div id="fileManager" class="card p-6 hidden">
             <div class="flex flex-wrap justify-between items-start mb-4">
                 <div class="flex flex-col items-center mr-2 mb-2">
-                    <button id="selectAllBtn" class="btn btn-primary">Select All</button>
-                    <span class="text-xs mt-1">in this folder</span>
+                    <button id="selectAllBtn" class="btn btn-primary">Pilih Semua</button>
+                    <span class="text-xs mt-1">di folder ini</span>
                 </div>
                 <div class="flex flex-col items-center mr-2 mb-2">
-                    <button id="invertSelectionBtn" class="btn btn-primary">Invert Selection</button>
-                    <span class="text-xs mt-1">in this folder</span>
+                    <button id="invertSelectionBtn" class="btn btn-primary">Batalkan Seleksi</button>
+                    <span class="text-xs mt-1">di folder ini</span>
                 </div>
                 <div class="flex flex-col items-center mr-2 mb-2">
-                    <button id="selectEverythingBtn" class="btn btn-primary">Select Everything</button>
-                    <span class="text-xs mt-1">all files</span>
+                    <button id="selectEverythingBtn" class="btn btn-primary">Pilih Semua</button>
+                    <span class="text-xs mt-1">semua files</span>
                 </div>
-                <button id="submitBtn" class="btn btn-primary mb-2">Submit</button>
+                <button id="submitBtn" class="btn btn-primary mb-2">Kirim</button>
             </div>
             <div class="mb-4">
-                <p>Selected files: <span id="selectedCount">0</span> / <span id="totalCount">0</span></p>
+                <p>File Terpilih: <span id="selectedCount">0</span> / <span id="totalCount">0</span></p>
                 <p>Total size: <span id="selectedSize">0 B</span> / <span id="totalSize">0 B</span></p>
             </div>
             <div id="fileTree" class="mb-4"></div>
@@ -412,7 +414,7 @@
                         class="social-button">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://www.instagram.com" target="_blank" class="social-button">
+                    <a href="https://www.instagram.com/katarinabluu" target="_blank" class="social-button">
                         <i class="fab fa-instagram"></i>
                     </a>
                 </div>
@@ -782,7 +784,7 @@
                 <input type="text" id="editNameInput" class="edit-name-input" value="${node.name}">
             `;
             modalFooter.innerHTML = `
-                <button id="saveNameBtn" class="btn btn-primary">Save</button>
+                <button id="saveNameBtn" class="btn btn-primary">Simpan</button>
                 <button class="btn btn-secondary" onClick="closeModal()">Cancel</button>
             `;
 
@@ -806,12 +808,12 @@
                     }).then(response => {
                         if (response.ok) {
                             modalTitle.textContent = 'Success!';
-                            modalBody.innerHTML = '<p>Your Rename has been submitted successfully.</p>';
+                            modalBody.innerHTML = '<p>Edit nama berhasil dikirimkan.</p>';
                             node.name = newName;
                             renderFileTree(currentFolder ? currentFolder.children : files);
                         } else {
                             modalTitle.textContent = 'Error';
-                            modalBody.innerHTML = '<p>There was an error submitting your Rename. Try Again!.</p>';
+                            modalBody.innerHTML = '<p>Ada masalah ketika melakukan request, coba lagi!.</p>';
                         }
                         modalFooter.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">Okay</button>';
                         openModal();
@@ -841,13 +843,13 @@
         function submitData() {
             if (parseInt(selectedCount.innerText) === 0) {
                 modalTitle.textContent = 'Error';
-                modalBody.innerHTML = '<p>No files selected.</p>';
+                modalBody.innerHTML = '<p>No files terpilih.</p>';
                 modalFooter.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">Okay</button>';
                 openModal();
                 return;
             }
             modalTitle.textContent = 'Processing...';
-            modalBody.innerHTML = `<p>Submitting, ${selectedCount.innerText} file(s)... </p>`;
+            modalBody.innerHTML = `<p>Mengirim, ${selectedCount.innerText} file(s)... </p>`;
             modalFooter.innerHTML = '';
             openModal();
             const requestUrl = `/app/files/torrent?gid=${urlParams.gid}&pin=${pinInput.value}&mode=selection`;
@@ -856,11 +858,11 @@
                     closeModal();
                 }
                 if (response.ok) {
-                    modalTitle.textContent = 'Success!';
-                    modalBody.innerHTML = '<p>Your selection has been submitted successfully.</p>';
+                    modalTitle.textContent = 'Berhasil!';
+                    modalBody.innerHTML = '<p>Pilihanmu berhasil terkirim.</p>';
                 } else {
                     modalTitle.textContent = 'Error';
-                    modalBody.innerHTML = '<p>An error occurred while submitting your selection. Try Again!</p>';
+                    modalBody.innerHTML = '<p>Error saat mengirim pilihanmu. coba lagi!</p>';
                 }
                 modalFooter.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">Okay</button>';
                 openModal();
@@ -877,15 +879,15 @@
             pinInput.blur();
             if (pinInput.value === '') {
                 modalTitle.textContent = 'Missing Pin';
-                modalBody.innerHTML = `<p>The pin is missing.</p>`;
-                modalFooter.innerHTML = '<button class="btn btn-primary" onClick="closeModal()">Try Again</button>';
+                modalBody.innerHTML = `<p>Pin is hillang.</p>`;
+                modalFooter.innerHTML = '<button class="btn btn-primary" onClick="closeModal()">Coba lagi</button>';
                 openModal();
                 return false;
             }
             if (urlParams.gid == null || urlParams.gid === '') {
                 modalTitle.textContent = 'Missing parameter';
                 modalBody.innerHTML = `<p>The parameter gid is missing.</p>`;
-                modalFooter.innerHTML = '<button class="btn btn-primary" onClick="closeModal()">Try Again</button>';
+                modalFooter.innerHTML = '<button class="btn btn-primary" onClick="closeModal()">Coba lagi</button>';
                 openModal();
                 return false;
             }
@@ -895,8 +897,8 @@
                     return response.json().then(data => {
                         if (data.error) {
                             modalTitle.textContent = data.error;
-                            modalBody.innerHTML = `<p>${data.message}. Try Again!</p>`;
-                            modalFooter.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">Retry</button>';
+                            modalBody.innerHTML = `<p>${data.message}. Coba Lagi!</p>`;
+                            modalFooter.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">Coba</button>';
                             openModal();
                         } else {
                             files = data.files;
@@ -913,9 +915,9 @@
                         }
                     });
                 } else {
-                    modalTitle.textContent = 'Something Went Wrong!';
+                    modalTitle.textContent = 'sesuatu Sedang Kacau!';
                     modalBody.innerHTML = '<p>Check console. Status Code: ' + response.status + '</p>';
-                    modalFooter.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">Retry</button>';
+                    modalFooter.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">Coba</button>';
                     openModal();
                 }
             }).catch(error => {
@@ -945,12 +947,12 @@
         function updateSelectAllButtonText() {
             const nodes = currentFolder ? currentFolder.children : files;
             const allSelected = nodes.every(node => node.type === 'folder' ? areAllChildrenSelected(node) : node.selected);
-            selectAllBtn.textContent = allSelected ? 'Deselect All' : 'Select All';
+            selectAllBtn.textContent = allSelected ? 'Batalkan Semua' : 'Pilih Semua';
         }
 
         function updateSelectEverythingButtonText() {
             const allSelected = selectedCount === totalCount;
-            selectEverythingBtn.textContent = allSelected ? 'Deselect Everything' : 'Select Everything';
+            selectEverythingBtn.textContent = allSelected ? 'Batalkan Semua' : 'Pilih Semua';
         }
 
         loadThemePreference();

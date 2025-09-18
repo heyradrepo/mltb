@@ -499,7 +499,6 @@ Tools:
 
 # unauthorized
 help_string_unauth = """
-⚠️ Kamu belum ter-authorize untuk menggunakan bot ini.
-
-Kalau mau pakai, minta akses ke Bot Owner dulu.
+⚠️ 你还没有使用权限。
+想用的话，请先联系机器人主人申请。
 """

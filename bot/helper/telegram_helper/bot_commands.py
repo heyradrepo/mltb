@@ -28,8 +28,8 @@ class BotCommands:
     UnAuthorizeCommand = f"unauth{i}"
     AddSudoCommand = f"addsudo{i}"
     RmSudoCommand = f"rmsudo{i}"
-    PingCommand = f"ping{i}"
-    RestartCommand = f"restart{i}"
+    PingCommand = [f"ping{i}", f"p{i}"]
+    RestartCommand = [f"restart{i}", f"r{i}"]
     StatsCommand = f"stats{i}"
     HelpCommand = f"help{i}"
     LogCommand = f"log{i}"

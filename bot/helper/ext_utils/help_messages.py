@@ -490,11 +490,11 @@ Mirror & Leech:
 /{BotCommands.LeechCommand[0]} | /{BotCommands.QbLeechCommand[0]} | /{BotCommands.YtdlLeechCommand[0]}
 
 Google Drive:
-/{BotCommands.CloneCommand} | /{BotCommands.CountCommand} | /{BotCommands.DeleteCommand}
+/{BotCommands.CloneCommand} | /{BotCommands.CountCommand} | /{BotCommands.ListCommand}
 
 Tools:
 /{BotCommands.StatusCommand} | /{BotCommands.StatsCommand}
-/{BotCommands.SearchCommand} | /{BotCommands.ListCommand} | /{BotCommands.UserSetCommand}
+/{BotCommands.SearchCommand} | /{BotCommands.ListCommand} | /{BotCommands.UserSetCommand} | /{BotCommands.SearchCommand} |
 """
 
 # unauthorized

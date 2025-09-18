@@ -191,7 +191,7 @@ async def status_pages(_, query):
 
         # Format pesan overview
         msg = (
-            f"<b>📊 Overall Tasks</b>\n\n"
+            f"<b>📊 总体任务</b>\n\n"
             f"<blockquote>"
             f"• DL : <b>{tasks['Download']}</b> | UP : <b>{tasks['Upload']}</b> | SD : <b>{tasks['Seed']}</b>\n"
             f"• AR : <b>{tasks['Archive']}</b> | EX : <b>{tasks['Extract']}</b> | SP : <b>{tasks['Split']}</b>\n"
@@ -200,9 +200,9 @@ async def status_pages(_, query):
             f"• CM : <b>{tasks['ConvertMedia']}</b> | FF : <b>{tasks['FFmpeg']}</b>"
             f"</blockquote>\n\n"
             f"<blockquote>"
-            f"• DL Speed : <code>{get_readable_file_size(dl_speed)}/s</code>\n"
-            f"• UP Speed : <code>{get_readable_file_size(up_speed)}/s</code>\n"
-            f"• SD Speed : <code>{get_readable_file_size(seed_speed)}/s</code>"
+            f"• DL速度 : <code>{get_readable_file_size(dl_speed)}/s</code>\n"
+            f"• UP速度 : <code>{get_readable_file_size(up_speed)}/s</code>\n"
+            f"• SD速度 : <code>{get_readable_file_size(seed_speed)}/s</code>"
             f"</blockquote>"
         )
 

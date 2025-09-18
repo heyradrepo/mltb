@@ -155,10 +155,10 @@ def speed_string_to_bytes(size_text: str):
 def get_progress_bar_string(pct):
     pct = float(pct.strip("%"))
     p = min(max(pct, 0), 100)
-    total_blocks = 8
+    total_blocks = 12
     c_full = int(round(p / (100 / total_blocks)))
 
-    p_str = "🟩" * c_full + "⬜" * (total_blocks - c_full)
+    p_str = "█" * c_full + "░" * (total_blocks - c_full)
     return f"[{p_str}]"
 
 
@@ -194,25 +194,21 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         task_gid = task.gid()[:8]
         cancel_task = f"/{BotCommands.CancelTaskCommand[0]}_{task_gid}"
 
-        # Judul + nama file + tool
-        if task.listener.is_super_chat:
-            msg += f"<b>{index + start_position}. <a href='{task.listener.message.link}'>{tstatus}</a></b>\n"
-        else:
-            msg += f"<b>{index + start_position}. {tstatus}</b>\n"
-
+        # Judul + nama file
+        msg += f"<b>{index + start_position}. {tstatus}</b>\n"
         msg += f"📂 <code>{escape(task.name())}</code>\n"
         if task.listener.subname:
             msg += f"   └─ <i>{task.listener.subname}</i>\n"
-        msg += f"By {getattr(task, 'tool', 'N/A')}\n"
+        msg += f"工具: {getattr(task, 'tool', 'N/A')}\n"
 
-        # Detail progress dalam blockquote
-        msg += "<blockquote>\n"
+        # Detail进度
+        msg += "<blockquote>"
         if (
             tstatus not in [MirrorStatus.STATUS_SEED, MirrorStatus.STATUS_QUEUEUP]
             and task.listener.progress
         ):
             progress = task.progress()
-            msg += f"├─ {get_progress_bar_string(progress)} {progress}\n"
+            msg += f"进度: {get_progress_bar_string(progress)} {progress}\n"
 
             if task.listener.subname:
                 subsize = f"/{get_readable_file_size(task.listener.subsize)}"
@@ -222,30 +218,30 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
                 subsize = ""
                 count = ""
 
-            msg += f"├─ Processed: {task.processed_bytes()}{subsize}\n"
+            msg += f"已处理: {task.processed_bytes()}{subsize}\n"
             if count:
-                msg += f"├─ Count: {count}\n"
-            msg += f"├─ Size: {task.size()}\n"
-            msg += f"├─ Speed: {task.speed()}\n"
-            msg += f"└─ ETA: {task.eta()}\n"
+                msg += f"文件数: {count}\n"
+            msg += f"大小: {task.size()}\n"
+            msg += f"速度: {task.speed()}\n"
+            msg += f"剩余: {task.eta()}\n"
 
             if tstatus == MirrorStatus.STATUS_DOWNLOAD and (task.listener.is_torrent or task.listener.is_qbit):
                 try:
-                    msg += f"   ↳ Seeders: {task.seeders_num()} | Leechers: {task.leechers_num()}\n"
+                    msg += f"种子数: {task.seeders_num()} | 吸血数: {task.leechers_num()}\n"
                 except Exception:
                     pass
 
         elif tstatus == MirrorStatus.STATUS_SEED:
-            msg += f"├─ Size: {task.size()}\n"
-            msg += f"├─ Speed: {task.seed_speed()}\n"
-            msg += f"├─ Uploaded: {task.uploaded_bytes()}\n"
-            msg += f"└─ Ratio: {task.ratio()} | Time: {task.seeding_time()}\n"
+            msg += f"大小: {task.size()}\n"
+            msg += f"上传: {task.uploaded_bytes()}\n"
+            msg += f"速度: {task.seed_speed()}\n"
+            msg += f"分享率: {task.ratio()} | 时间: {task.seeding_time()}\n"
         else:
-            msg += f"└─ Size: {task.size()}\n"
+            msg += f"大小: {task.size()}\n"
 
-        msg += "</blockquote>\n"
+        msg += "</blockquote>"
 
-        # Cancel command jadi bold
+        # Cancel
         msg += f"<b>{cancel_task}</b>\n\n"
 
     # Kalau kosong
@@ -253,15 +249,15 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
         if status == "All":
             return None, None
         else:
-            msg = f"No Active {status} Tasks!\n\n"
+            msg = f"暂无 {status} 任务！\n\n"
 
     # Tombol
     buttons = ButtonMaker()
     if not is_user:
-        buttons.data_button("☰", f"status {sid} ov", position="header")
+        buttons.data_button("☰\n总览", f"status {sid} ov", position="header")
 
     if len(tasks) > STATUS_LIMIT:
-        msg += f"<b>Page:</b> {page_no}/{pages} | <b>Tasks:</b> {tasks_no} | <b>Step:</b> {page_step}\n"
+        msg += f"<b>页:</b> {page_no}/{pages} | <b>任务:</b> {tasks_no} | <b>步长:</b> {page_step}\n"
         buttons.data_button("⫷", f"status {sid} pre", position="header")
         buttons.data_button("⫸", f"status {sid} nex", position="header")
         if tasks_no > 30:
@@ -273,11 +269,11 @@ async def get_readable_message(sid, is_user, page_no=1, status="All", page_step=
             if status_value != status:
                 buttons.data_button(label, f"status {sid} st {status_value}")
 
-    buttons.data_button("♻️", f"status {sid} ref", position="header")
+    buttons.data_button("♻️\n刷新", f"status {sid} ref", position="header")
     button = buttons.build_menu(8)
 
     # Info sistem
-    msg += f"\n<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
-    msg += f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {get_readable_time(time() - bot_start_time)}"
+    msg += f"\n<b>CPU:</b> {cpu_percent()}% | <b>可用:</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
+    msg += f"\n<b>内存:</b> {virtual_memory().percent}% | <b>运行时间:</b> {get_readable_time(time() - bot_start_time)}"
 
     return msg, button

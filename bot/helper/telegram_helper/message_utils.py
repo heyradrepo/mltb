@@ -1,5 +1,6 @@
 from asyncio import sleep
 from pyrogram.errors import FloodWait, FloodPremiumWait
+from pyrogram.types import InputMediaPhoto
 from re import match as re_match
 from time import time
 
@@ -11,39 +12,54 @@ from ..ext_utils.exceptions import TgLinkException
 from ..ext_utils.status_utils import get_readable_message
 
 
-async def send_message(message, text, buttons=None, block=True):
+async def send_message(message, text=None, buttons=None, block=True, photo=None):
     try:
-        return await message.reply(
-            text=text,
-            quote=True,
-            disable_web_page_preview=True,
-            disable_notification=True,
-            reply_markup=buttons,
-        )
+        if photo:
+            return await message.reply_photo(
+                photo=photo,
+                caption=text,
+                quote=True,
+                disable_notification=True,
+                reply_markup=buttons,
+            )
+        else:
+            return await message.reply(
+                text=text,
+                quote=True,
+                disable_web_page_preview=True,
+                disable_notification=True,
+                reply_markup=buttons,
+            )
     except FloodWait as f:
         LOGGER.warning(str(f))
         if not block:
             return str(f)
         await sleep(f.value * 1.2)
-        return await send_message(message, text, buttons)
+        return await send_message(message, text, buttons, block, photo)
     except Exception as e:
         LOGGER.error(str(e))
         return str(e)
 
 
-async def edit_message(message, text, buttons=None, block=True):
+async def edit_message(message, text=None, buttons=None, block=True, photo=None):
     try:
-        return await message.edit(
-            text=text,
-            disable_web_page_preview=True,
-            reply_markup=buttons,
-        )
+        if photo:
+            return await message.edit_media(
+                media=InputMediaPhoto(media=photo, caption=text),
+                reply_markup=buttons,
+            )
+        else:
+            return await message.edit(
+                text=text,
+                disable_web_page_preview=True,
+                reply_markup=buttons,
+            )
     except FloodWait as f:
         LOGGER.warning(str(f))
         if not block:
             return str(f)
         await sleep(f.value * 1.2)
-        return await edit_message(message, text, buttons)
+        return await edit_message(message, text, buttons, block, photo)
     except Exception as e:
         LOGGER.error(str(e))
         return str(e)
